@@ -1,5 +1,6 @@
 package com.example.springjdbc;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -86,6 +87,32 @@ public class EmpleadoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al eliminar: " + e.getMessage());
         }
+    }
+
+    @GetMapping(value = "/empleados", params = "nombre")
+    public ResponseEntity<?> buscarPorNombre(@RequestParam String nombre) {
+        // Validación 1: nombre no puede ser nulo o vacío
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("El parámetro 'nombre' es obligatorio.");
+        }
+
+        // Validación 2: longitud máxima
+        if (nombre.length() > 100) {
+            return ResponseEntity.badRequest().body("El parámetro 'nombre' no debe superar los 100 caracteres.");
+        }
+
+        // Validación 3: solo letras, espacios y tildes
+        if (!nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")) {
+            return ResponseEntity.badRequest().body("El parámetro 'nombre' contiene caracteres no permitidos.");
+        }
+        // Búsqueda segura
+        List<Empleado> empleados = empleadoDAO.buscarPorNombre(nombre);
+
+        if (empleados.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se encontraron empleados con nombre: " + nombre);
+        }
+        return ResponseEntity.ok(empleados);
     }
 
 

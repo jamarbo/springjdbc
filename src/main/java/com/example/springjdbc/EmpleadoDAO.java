@@ -55,6 +55,20 @@ public class EmpleadoDAO {
         return jdbcTemplate.update(sql, id);
     }
 
+    public List<Empleado> buscarPorNombre(String nombre){
+         String sql = "SELECT id, nombre FROM empleados WHERE LOWER(nombre) LIKE ?";
+         String criterio = "%"+nombre.toLowerCase()+"%";
+
+         return jdbcTemplate.query(sql,
+                             new Object[]{criterio},
+                             (rs, rowNum)-> {
+                     Empleado e = new Empleado();
+                     e.setId(rs.getInt("id"));
+                     e.setNombre(rs.getString("nombre"));
+                     return e;
+                 });
+    }
+
 
 
 
