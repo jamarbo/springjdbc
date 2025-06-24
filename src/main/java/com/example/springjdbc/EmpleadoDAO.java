@@ -45,10 +45,11 @@ public class EmpleadoDAO {
 
     }
 
-    public int actualizarEmpleado(Empleado empleado) {
+    public int actualizarEmpleado(int id, String nombre) {
         String sql = "UPDATE empleados SET nombre = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, empleado.getNombre(), empleado.getId());
+        return jdbcTemplate.update(sql, nombre, id);
     }
+
 
     public int eliminarEmpleado(int id) {
         String sql = "DELETE FROM empleados WHERE id = ?";
@@ -67,6 +68,42 @@ public class EmpleadoDAO {
                      e.setNombre(rs.getString("nombre"));
                      return e;
                  });
+    }
+
+    public List<Empleado> obtenerPaginado(int page, int size) {
+        String sql = "SELECT id, nombre FROM empleados ORDER BY id LIMIT ? OFFSET ?";
+        int offset = page * size;
+        return jdbcTemplate.query(sql, new Object[]{size, offset}, (rs, rowNum) -> {
+            Empleado e = new Empleado();
+            e.setId(rs.getInt("id"));
+            e.setNombre(rs.getString("nombre"));
+            return e;
+        });
+    }
+
+    public long contarPorNombre(String nombre) {
+        String sql = "SELECT COUNT(*) FROM empleados WHERE LOWER(nombre) LIKE ?";
+        String criterio = "%" + nombre.toLowerCase() + "%";
+        return jdbcTemplate.queryForObject(sql, new Object[]{criterio}, Long.class);
+    }
+
+
+    public List<Empleado> buscarPorNombrePaginado(String nombre, int page, int size) {
+        String sql = "SELECT id, nombre FROM empleados " +
+                "WHERE LOWER(nombre) LIKE ? " +
+                "ORDER BY id " +
+                "LIMIT ? OFFSET ?";
+        String criterio = "%" + nombre.toLowerCase() + "%";
+        int offset = page * size;
+
+        return jdbcTemplate.query(sql,
+                new Object[]{criterio, size, offset},
+                (rs, rowNum) -> {
+                    Empleado e = new Empleado();
+                    e.setId(rs.getInt("id"));
+                    e.setNombre(rs.getString("nombre"));
+                    return e;
+                });
     }
 
 
