@@ -16,8 +16,15 @@ public class EmpleadoController {
     }
 
     @GetMapping("/empleados")
-    public List<Empleado> listar() {
-        return empleadoDAO.obtenerTodos();
+    public ResponseEntity<?> listar() {
+        List<Empleado> empleados = empleadoDAO.obtenerTodos();
+
+        // Convertimos de Entidad → DTO
+        List<EmpleadoRespuestaDTO> respuesta = empleados.stream()
+                .map(e -> new EmpleadoRespuestaDTO(e.getNombre()))
+                .toList();
+
+        return ResponseEntity.ok(respuesta);
     }
 
     @PostMapping("/empleados")
